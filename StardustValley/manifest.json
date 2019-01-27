@@ -1,0 +1,10 @@
+﻿{
+  "Name": "stardust",
+  "Author": "roliatica",
+  "Version": "1.0.0",
+  "Description": "I do not know quite yet.",
+  "UniqueId": "roliatica.stardust",
+  "EntryDll": "StardustValley.dll",
+  "MinimumApiVersion": "2.9",
+  "UpdateKeys": []
+}
