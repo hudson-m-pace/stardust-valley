@@ -11,7 +11,6 @@ namespace StardustValley
 {
     public class ModEntry : Mod, IAssetEditor
     {
-        private Texture2D testTexture;
         const int startingID = 912;
         public override void Entry(IModHelper helper)
         {
@@ -84,25 +83,52 @@ namespace StardustValley
             }
             else if (asset.AssetNameEquals("Maps/springobjects"))
             {
-                Texture2D data = asset.AsImage().Data;
+                Texture2D spriteSheet = asset.AsImage().Data;
                 Texture2D newTexture = Helper.Content.Load<Texture2D>("assets/test.png", ContentSource.ModFolder); // file extension?
-                Color[] newTextureData = new Color[newTexture.Width * newTexture.Height];
-                newTexture.GetData<Color>(newTextureData);
-                Rectangle rect = Game1.getSourceRectForStandardTileSheet(data, 335, 16, 16);
-                Color[] tempData = new Color[data.Width * data.Height];
-                data.GetData<Color>(tempData);
-                int i = 0;
-                for (int j = 0; j < rect.Height; j++)
-                {
-                    for (int k = 0; k < rect.Width; k++)
-                    {
-                        tempData[((rect.Y + j) * data.Width) + rect.X + k] = newTextureData[i];
-                       // this.Monitor.Log($"Changed pixel at {rect.X + k}, {rect.Y + j}");
-                        i++;
-                    }
-                }
-                data.SetData<Color>(tempData);
+                Texture2D newTexture2 = Helper.Content.Load<Texture2D>("assets/test2.png", ContentSource.ModFolder);
+
+                spriteSheet = SwapTexture(spriteSheet, newTexture, 335);
+                spriteSheet = SwapTexture(spriteSheet, newTexture2, 912);
+                asset.ReplaceWith(spriteSheet);
             }
+        }
+
+        private Texture2D SwapTexture(Texture2D spriteSheet, Texture2D newTexture, int sheetIndex)
+        {
+            Rectangle oldTextureRect = Game1.getSourceRectForStandardTileSheet(spriteSheet, sheetIndex, 16, 16);
+            Color[] spriteSheetData = new Color[spriteSheet.Width * spriteSheet.Height];
+            Color[] newTextureData = new Color[newTexture.Width * newTexture.Height];
+            spriteSheet.GetData<Color>(spriteSheetData);
+            newTexture.GetData<Color>(newTextureData);
+
+            int spriteSheetHeight = spriteSheet.Height;
+            while (spriteSheetHeight * spriteSheet.Width / (16 * 16) <= sheetIndex)
+            {
+                spriteSheetHeight+= 16;
+            }
+            if (spriteSheetHeight != spriteSheet.Height)
+            {
+                Color[] temp = new Color[spriteSheet.Width * spriteSheetHeight];
+                spriteSheetData.CopyTo(temp, 0);
+                this.Monitor.Log($"{temp.Length}, {spriteSheetData.Length}");
+                spriteSheetData = temp;
+                this.Monitor.Log($"{spriteSheetData.Length}");
+            }
+
+
+            int i = 0;
+            for (int j = 0; j < oldTextureRect.Height; j++)
+            {
+                for (int k = 0; k < oldTextureRect.Width; k++)
+                {
+                    this.Monitor.Log($"{((oldTextureRect.Y + j) * spriteSheet.Width) + oldTextureRect.X + k}");
+                    spriteSheetData[((oldTextureRect.Y + j) * spriteSheet.Width) + oldTextureRect.X + k] = newTextureData[i];
+                    i++;
+                }
+            }
+            Texture2D tempe = new Texture2D(Game1.graphics.GraphicsDevice, spriteSheet.Width, spriteSheetHeight);
+            tempe.SetData<Color>(spriteSheetData);
+            return tempe;
         }
     }
 }
